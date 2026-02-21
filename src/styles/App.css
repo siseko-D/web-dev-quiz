@@ -192,6 +192,14 @@ body {
     z-index: 100
 }
 
+/* logo icon styling */
+.navbar .logo .icon {
+    color: #4caf50;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
 .navbar-container {
     justify-content: space-between;
     margin: 0 auto;
@@ -211,6 +219,30 @@ body {
     max-width: 1200px;
     padding: 1rem 2rem;
     text-align: center;
+}
+
+/* print styles for PDF export */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .navbar, .footer, .start-screen, .selection-screen, .loading-screen, .notice, .error-screen {
+    display: none !important;
+  }
+  .results-screen {
+    margin: 0;
+    padding: 0;
+  }
+  .report-item.correct .question, .report-item.incorrect .question {
+    font-weight: bold;
+  }
+  .download-button {
+    display: none;
+  }
+  .restart-button {
+    display: none;
+  }
 }
 
 /* answer feedback styling */
@@ -684,6 +716,30 @@ body {
 
 .restart-button .icon {
     margin-right: 8px
+}
+
+/* download PDF button */
+.download-button {
+    align-items: center;
+    background-color: #2196f3;
+    border: none;
+    border-radius: 50px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 12px 24px;
+    transition: all .2s;
+}
+
+.download-button:hover {
+    background-color: #1e88e5;
+    transform: scale(1.05);
+}
+
+.download-button .icon {
+    margin-right: 8px;
 }
 
 .home-button {

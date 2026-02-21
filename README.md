@@ -1,15 +1,18 @@
 # Web Dev Quiz App
 
+
+
 An interactive web development quiz application powered by Google's Gemini AI. Test your knowledge across multiple programming languages and web technologies with dynamically generated questions.
 
 ## 🚀 Features
 
-- **AI-Generated Questions**: Each quiz is uniquely generated using Google's Gemini AI
+- **AI-Generated Questions**: Each quiz is uniquely generated using Google's Gemini AI (falls back to built-in topic‑aware samples if generation fails)
 - **Multiple Topics**: HTML, CSS, JavaScript, React, Python, Java, and more
 - **Difficulty Levels**: Easy, Medium, and Hard questions
 - **Timed Challenges**: 60-second timer per question
 - **Study Resources**: Curated learning materials for each topic
 - **Performance Tracking**: Detailed quiz results and explanations
+- **PDF Export**: Download a styled PDF of your quiz report from the results screen
 
 ## 🛠️ Tech Stack
 
@@ -29,43 +32,43 @@ An interactive web development quiz application powered by Google's Gemini AI. T
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/web-dev-quiz.git
-   cd web-dev-quiz
-    ```
-2. **Install Dependencies**
-```bash
+git clone https://github.com/YOUR_USERNAME/web-dev-quiz.git
+cd web-dev-quiz
+   ```
+
+2. **Install dependencies**
+   ```bash
 npm install
-```
+   ```
 
-3. **Get a Gemini API Key**
-- Visit Google AI Studio.
-- Sign in with your Google account.
-- Click "Create API Key".
-- Copy your new API key.
+3. **Get a Google Gemini API key**
+   - Visit Google AI Studio.
+   - Sign in with your Google account.
+   - Click "Create API Key".
+   - Copy the key.
 
-4. **Set up environment variables**
-- Create a .env file in the root directory:
-```bash
-REACT_APP_GEMINI_API_KEY=your_api_key_here
-```
+4. **Create a `.env` file**
+   - In the project root add:
+     ```
+REACT_APP_GOOGLE_API_KEY=your_api_key_here
+     ```
+   - The `.env` file is ignored by Git (see `.gitignore`), so your key stays private.
+   - Restart the dev server if it’s already running so the new variable is picked up.
 
-5. **Update the API key in App.js**
-- Open src/App.js and replace the API key line with:
-```bash
-const genAI = new GoogleGenerativeAI(process.env.REACT_APP_GEMINI_API_KEY);
-```
-
-6. **Start the development server**
-```bash
+5. **Start the development server**
+   ```bash
 npm start
-```
+   ```
 
-7. **Open http://localhost:3000 to view it in your browser**
+6. **Open http://localhost:3000 in your browser** to begin using the app.
 
 ## 🏗️ Project Structure
 
 *(navigation bar and footer live under `src/components` and are
 memoized with `React.memo` so they don’t re-render on every state change.)*
+
+**Study resources** now point directly to the selected topic’s tutorial,
+reference and example pages on W3Schools/MDN instead of generic homepages.
 
 ```bash
 web-dev-quiz/
@@ -90,12 +93,20 @@ web-dev-quiz/
 └── test-ai.js                # Test script for AI
 ```
 
+### 📦 Key components
+- **Navbar.js** & **Footer.js** – navigation bar and footer, memoized with `React.memo`.
+- **QuizApp.js** – quiz logic (AI/fallback questions, timer, scoring, results, PDF export).
+- **Study.js** – study overview page directing users to specific topics.
+- **StudyTopic.js** – topic‑specific resource links and descriptions.
+- **About.js** – project information, acknowledgments and links.
+
 ## 🎯 Usage
 - **Start a Quiz**: Click "Start Quiz" on the home page
 - **Select Topic**: Choose from HTML, CSS, JavaScript, React, Python, or Java
 - **Choose Difficulty**: Pick Easy, Medium, or Hard
 - **Answer Questions**: You have 60 seconds per question
 - **View Results**: See your score and correct answers with explanations
+- **Download PDF**: On the results screen hit "Download PDF" to print or save a styled report (this uses the browser print dialog with a special print stylesheet).
 
 ## 🧪 Testing AI Models
 - You can test which Gemini models are available with:
@@ -137,10 +148,10 @@ npm run build
 
 ## ⚠️ Troubleshooting
 **Q: AI questions aren't generating**
-- A: Check that your API key is valid and has the Generative Language API enabled
+- A: Verify that `REACT_APP_GOOGLE_API_KEY` is set in your `.env`, that it’s valid, and that the Generative Language API is enabled for that key
 
-**Q: 404 errors with Gemini models**
-- A: Try using "gemini-pro" instead of "gemini-1.5-flash" in App.js
+**Q: 404 or 503 errors with Gemini models**
+- A: The app automatically retries several current models (`gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, etc.). Run `node check-models.js YOUR_API_KEY` to list models your key can access. Temporary service outages are normal – either wait and try again or use the built-in fallback questions.
 
 **Q: App won't start**
 - A: Run npm install to ensure all dependencies are installed

@@ -14,7 +14,7 @@ const Navbar = React.memo(() => {
     <nav className="navbar">
       <div className="navbar-container">
         <div className="logo" onClick={() => navigate("/")}> 
-          <span className="icon">💻</span>
+          <span className="icon">&lt;&gt;</span>
           <span>Web Dev Quiz</span>
         </div>
         <div className="nav-links">

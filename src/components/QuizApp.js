@@ -159,9 +159,7 @@ const QuizApp = () => {
 
     try {
       // Use the correct model name format - no "models/" prefix needed
-      // choose a model that works for this key
-      // current models accessible to most projects; older names such as
-      // gemini-1.5-flash no longer exist, hence the 404 error you were seeing
+      // attempt each model in turn until a generation succeeds
       const possibleModels = [
         "gemini-2.5-flash",
         "gemini-2.5-pro",
@@ -170,50 +168,51 @@ const QuizApp = () => {
         "gemini-2.0-flash-lite-001",
         "gemini-2.5-flash-lite"
       ];
-      let model = null;
+      let parsedQuestions = null;
       let selectedModel = null;
+
       for (const m of possibleModels) {
         try {
-          model = genAI.getGenerativeModel({ model: m });
-          selectedModel = m;
-          break;
-        } catch (e) {
-          console.warn("model", m, "not available", e.message || e);
-        }
-      }
-      if (!model) {
-        throw new Error("No suitable generative model found for this key");
-      }
-      console.log("selected model", selectedModel);
-      
-      const prompt = `Generate 5 multiple choice questions about ${topic} at ${difficulty} level. ` +
-        `Ensure the questions are different from any you previously generated for this topic and difficulty; randomize wording and order. ` +
-        `Include this seed string to encourage variation: ${seed}.\n\n` +
-        `Return ONLY a JSON array in this exact format, nothing else:\n` +
-        `[{
+          const model = genAI.getGenerativeModel({ model: m });
+          console.log("trying generation with model", m);
+
+          const result = await model.generateContent(`Generate 5 multiple choice questions about ${topic} at ${difficulty} level. ` +
+            `Ensure the questions are different from any you previously generated for this topic and difficulty; randomize wording and order. ` +
+            `Include this seed string to encourage variation: ${seed}.\n\n` +
+            `Return ONLY a JSON array in this exact format, nothing else:\n` +
+            `[{
   "question": "Question text",
   "options": ["Option1","Option2","Option3","Option4"],
   "correctAnswer": "Option1",
   "explanation": "Brief explanation"
-}]`;
+}]`);
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = await response.text();
-      console.log("AI response text:", text);
-      // Clean the response to get valid JSON
-      const cleanedText = text.replace(/```json|```/g, "").trim();
-      const parsedQuestions = JSON.parse(cleanedText);
+          const response = await result.response;
+          const text = await response.text();
+          console.log("AI response text (", m, "):", text);
+          const cleanedText = text.replace(/```json|```/g, "").trim();
+          const arr = JSON.parse(cleanedText);
+          if (Array.isArray(arr) && arr.length > 0) {
+            parsedQuestions = arr;
+            selectedModel = m;
+            break;
+          } else {
+            console.warn("model", m, "returned invalid payload");
+          }
+        } catch (e) {
+          console.warn("generation failed with model", m, e.message || e);
+          // try next model
+        }
+      }
 
-      if (!Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
-        throw new Error("Invalid question format");
+      if (!parsedQuestions) {
+        throw new Error("All models failed to generate content");
       }
 
       setQuestions(parsedQuestions);
       setNotice("Questions generated via AI (" + selectedModel + ").");
       setQuizStarted(true);
       setTimer(60);
-      // clear notice after a bit so user isn't stuck with banner
       setTimeout(() => setNotice(null), 5000);
     } catch (err) {
       console.error("Generation error:", err);
@@ -229,6 +228,16 @@ const QuizApp = () => {
     }
   }, []);
 
+  const nextQuestion = useCallback(() => {
+    if (currentQuestionIndex + 1 < questions.length) {
+      setCurrentQuestionIndex(prev => prev + 1);
+      setTimer(60);
+      setSelectedAnswer(null);
+    } else {
+      setShowResults(true);
+    }
+  }, [currentQuestionIndex, questions.length]);
+
   const handleTimeOut = useCallback(() => {
     if (questions.length === 0) return;
     const q = questions[currentQuestionIndex];
@@ -240,17 +249,7 @@ const QuizApp = () => {
       isCorrect: false
     }]);
     setTimeout(nextQuestion, 1500);
-  }, [questions, currentQuestionIndex]);
-
-  const nextQuestion = () => {
-    if (currentQuestionIndex + 1 < questions.length) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      setTimer(60);
-      setSelectedAnswer(null);
-    } else {
-      setShowResults(true);
-    }
-  };
+  }, [questions, currentQuestionIndex, nextQuestion]);
 
   useEffect(() => {
     if (quizStarted && !showResults && questions.length > 0) {
@@ -434,7 +433,10 @@ const QuizApp = () => {
               </div>
             ))}
           </div>
-          <button onClick={restartQuiz} className="restart-button">Restart Quiz</button>
+          <div className="results-actions">
+            <button onClick={restartQuiz} className="restart-button">Restart Quiz</button>
+            <button onClick={() => window.print()} className="download-button">Download PDF</button>
+          </div>
         </div>
       )}
     </div>

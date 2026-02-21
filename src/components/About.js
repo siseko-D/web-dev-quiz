@@ -4,8 +4,7 @@ const About = () => {
   const features = [
     { icon: "💻", title: "Multiple Technologies", description: "Covering HTML, CSS, JavaScript, React, Python, and more." },
     { icon: "⏱️", title: "Timed Challenges", description: "60 seconds per question to test your quick thinking." },
-    { icon: "📊", title: "Detailed Analytics", description: "Track your progress and identify weak areas." },
-    { icon: "🏆", title: "Achievements", description: "Earn badges for completing challenges." }
+    { icon: "📊", title: "Detailed Analytics", description: "Track your progress and identify weak areas." }
   ];
 
   return (
